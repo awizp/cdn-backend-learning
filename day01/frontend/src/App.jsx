@@ -10,42 +10,50 @@ export default function App() {
 
   // get method
   const loadItems = async () => {
-    const res = await fetch(API);
-    const data = await res.json();
-    setItems(data);
+    try {
+      const res = await fetch(API);
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setItems(data);
+    } catch (error) {
+      console.error("Problem while fetching users: ", error);
+    }
   };
 
   useEffect(() => {
-    const loadItems = async () => {
-      const res = await fetch(API);
-      const data = await res.json();
-      setItems(data);
+    const fetchUsers = () => {
+      loadItems();
     };
-    loadItems();
+
+    fetchUsers();
   }, []);
 
   // update method
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!input) return;
+    try {
+      e.preventDefault();
+      if (!input) return;
 
-    if (editId) {
-      await fetch(`${API}/${editId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: input }),
-      });
-      setEditId(null);
-    } else {
-      await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: input }),
-      });
+      if (editId !== null) {
+        await fetch(`${API}/${editId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: input }),
+        });
+        setEditId(null);
+      } else {
+        await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: input }),
+        });
+      }
+
+      setInput("");
+      loadItems();
+    } catch (error) {
+      console.error("Error in update or post method: ", error);
     }
-
-    setInput("");
-    loadItems();
   };
 
   // edit method
@@ -56,9 +64,13 @@ export default function App() {
 
   // delete method
   const handleDelete = async (id) => {
-    if (confirm("Are you sure want to delete?")) {
-      await fetch(`${API}/${id}`, { method: "DELETE" });
-      loadItems();
+    try {
+      if (window.confirm("Are you sure want to delete?")) {
+        await fetch(`${API}/${id}`, { method: "DELETE" });
+        loadItems();
+      }
+    } catch (error) {
+      console.log("Error in deleting the user: ", error);
     }
   };
 
@@ -78,7 +90,7 @@ export default function App() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <button className="bg-blue-500 text-white px-4 rounded cursor-pointer">
+          <button type="submit" className="bg-blue-500 text-white px-4 rounded cursor-pointer">
             {editId ? "Update" : "Add"}
           </button>
         </form>
