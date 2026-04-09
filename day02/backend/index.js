@@ -10,13 +10,13 @@ app.use(express.json());
 
 // get users
 const getUsers = () => {
-    const data = fs.readFile(usersData);
+    const data = fs.readFileSync(usersData);
     return JSON.parse(data);
 };
 
 // save users
 const saveUsers = (users) => {
-    fs.writeFile(usersData, JSON.stringify(users));
+    fs.writeFileSync(usersData, JSON.stringify(users));
 };
 
 app.get("/", (req, res) => {
